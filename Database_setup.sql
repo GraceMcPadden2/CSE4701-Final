@@ -1,3 +1,50 @@
+ -- Enterprise
+CREATE TABLE Enterprise (
+    enterprise_id        NUMBER PRIMARY KEY,
+    name                 VARCHAR2(255) NOT NULL,
+    headquarters_address VARCHAR2(255)
+);
+
+-- Vendor
+CREATE TABLE VENDOR (
+    vendor_id            NUMBER PRIMARY KEY,
+    name                 VARCHAR2(255) NOT NULL,
+    address              VARCHAR2(255),
+    contact_info         VARCHAR2(255)
+);
+
+-- Store
+CREATE TABLE STORE (
+    store_id             NUMBER PRIMARY KEY,
+    enterprise_id        NUMBER NOT NULL,
+    vendor_id            NUMBER,
+    address              VARCHAR2(255),
+    city                 VARCHAR2(100),
+    state                VARCHAR2(50),
+    hours                VARCHAR2(255),
+
+    CONSTRAINT fk_store_enterprise FOREIGN KEY (enterprise_id)
+        REFERENCES Enterprise (enterprise_id),
+
+    CONSTRAINT fk_store_vendor FOREIGN KEY (vendor_id)
+        REFERENCES VENDOR (vendor_id)
+);
+
+CREATE INDEX idx_store_enterprise ON Store (enterprise_id);
+CREATE INDEX idx_store_vendor ON Store (vendor_id);
+
+ -- Brand
+CREATE TABLE Brand (
+    brand_id             NUMBER PRIMARY KEY,
+    vendor_id            NUMBER NOT NULL,
+    name                 VARCHAR2(255) NOT NULL,
+
+    CONSTRAINT fk_brand_vendor FOREIGN KEY (vendor_id)
+        REFERENCES Vendor (vendor_id)
+);
+
+CREATE INDEX idx_brand_vendor ON Brand (vendor_id);
+
 -- PRODUCT TYPE
 CREATE TABLE product_type (
     type_id        SERIAL PRIMARY KEY,
