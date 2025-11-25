@@ -38,6 +38,7 @@ CREATE TABLE Brand (
     brand_id             NUMBER PRIMARY KEY,
     vendor_id            NUMBER NOT NULL,
     name                 VARCHAR2(255) NOT NULL,
+    description          VARCHAR2(400),
 
     CONSTRAINT fk_brand_vendor FOREIGN KEY (vendor_id)
         REFERENCES Vendor (vendor_id)
@@ -53,13 +54,6 @@ CREATE TABLE product_type (
     CONSTRAINT fk_product_type_parent
         FOREIGN KEY (parent_type_id)
         REFERENCES product_type(type_id)
-);
-
--- BRAND
-CREATE TABLE brand (
-    brand_id   SERIAL PRIMARY KEY,
-    name       VARCHAR(100) NOT NULL UNIQUE,
-    description TEXT
 );
 
 -- PRODUCT
