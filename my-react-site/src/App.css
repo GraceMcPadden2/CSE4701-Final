@@ -231,3 +231,25 @@ p {
 .login-section:hover {
   background: rgba(255,255,255,0.06);
 }
+
+/* Ensure the page and root element fill the viewport */
+html, body, #root {
+  height: 100%;
+}
+
+/* Make the app container a column flexbox and allow footer to be pushed down */
+.app-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Push footer to the bottom when content is short */
+.app-root > .site-footer {
+  margin-top: auto;
+}
+
+.site-main {
+  flex: 1 0 auto; /* let main grow to push footer to bottom */
+  display: block;
+}
