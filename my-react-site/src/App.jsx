@@ -1,14 +1,21 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 import cartIcon from './assets/cart.svg'; 
 import searchIcon from './assets/search.svg'; // Import the search icon
 import cartData from './data/cartData'; // Import the sample cart data
-import backgroundImage from './assets/background.jpg'; // <-- new import
+import HomePage from './pages/HomePage'; // <-- existing import
+import CartPage from './pages/CartPage'; // <-- existing import
+import ItemDetailsPage from './pages/ItemDetailsPage'; // <-- existing import
+import Login from './pages/Login'; // <-- new import
 
 function App() {
   const [page, setPage] = useState('home');
+  const [selectedItem, setSelectedItem] = useState(null); // <-- new state for selected item
+
+  const handleItemClick = (item) => {
+    setSelectedItem(item);
+    setPage('item-details');
+  };
 
   return (
     <div className="app-root">
@@ -34,7 +41,7 @@ function App() {
             className="login-section"
             onClick={(e) => {
               e.stopPropagation(); // do not trigger banner click
-              console.log('Log in clicked');
+              setPage('login'); // <-- changed to navigate to login
             }}
           >
             Log in
@@ -51,38 +58,10 @@ function App() {
         </div>
         <div className="sub-banner">
         </div>
-        {page === 'home' && (
-          <>
-            <div
-              className="hero-wrap"
-              style={{ backgroundImage: `url(${backgroundImage})` }}
-              role="img"
-              aria-label="Hero background"
-            />
-            <ul className="product-list">
-              {cartData.map((item) => (
-                <li key={item.id}>
-                  <h2>{item.name}</h2>
-                  <p>Price: {item.price}</p>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-        {page === 'cart' && (
-          <div>
-            <h1>Cart</h1>
-            <ul>
-              {cartData.map((item) => (
-                <li key={item.id}>
-                  <h2>{item.name}</h2>
-                  <p>Price: {item.price}</p>
-                  <p>Quantity: {item.quantity}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        {page === 'home' && <HomePage onItemClick={handleItemClick} />} 
+        {page === 'cart' && <CartPage />}
+        {page === 'item-details' && <ItemDetailsPage item={selectedItem} />}
+        {page === 'login' && <Login />}
       </main>
       <footer className="site-footer">
         <div className="site-footer-inner">
