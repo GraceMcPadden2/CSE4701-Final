@@ -2,7 +2,6 @@ import { useState } from 'react'
 import './App.css'
 import cartIcon from './assets/cart.svg'; 
 import searchIcon from './assets/search.svg'; // Import the search icon
-import cartData from './data/cartData'; // Import the sample cart data
 import HomePage from './pages/HomePage'; // <-- existing import
 import CartPage from './pages/CartPage'; // <-- existing import
 import ItemDetailsPage from './pages/ItemDetailsPage'; // <-- existing import
