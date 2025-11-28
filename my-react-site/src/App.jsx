@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import cartIcon from './assets/cart.svg'; 
 import searchIcon from './assets/search.svg'; // Import the search icon
@@ -10,6 +10,10 @@ import Login from './pages/Login'; // <-- new import
 function App() {
   const [page, setPage] = useState('home');
   const [selectedItem, setSelectedItem] = useState(null); // <-- new state for selected item
+
+  useEffect(() => {
+    console.log('Current page:', page);
+  }, [page]);
 
   const handleItemClick = (item) => {
     setSelectedItem(item);
@@ -51,6 +55,7 @@ function App() {
             className="cart-icon"
             onClick={(e) => {
               e.stopPropagation(); // Prevent triggering the banner click
+              console.log('Cart icon clicked');
               setPage('cart');
             }}
           />

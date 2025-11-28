@@ -6,20 +6,43 @@ const CartPage = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    console.log('CartPage mounted');
+    console.log('Fetching cart from Flask...');
     fetch('http://127.0.0.1:5000/cart')
-      .then(response => response.json())
+      .then(response => {
+        console.log('Raw cart response:', response);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status} ${response.statusText}`);
+        }
+        return response.json();
+      })
       .then(data => {
+        console.log('Cart data fetched:', data);
         setCartItems(data);
         setLoading(false);
       })
       .catch(err => {
+        console.error('Cart fetch error:', err);
         setError(err.message);
         setLoading(false);
       });
   }, []);
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error}</p>;
+  useEffect(() => {
+    console.log('cartItems state now:', cartItems);
+  }, [cartItems]);
+
+  if (loading) return <p>Loading cart...</p>;
+  if (error) return <p>Error loading cart: {error}</p>;
+
+  if (!cartItems || cartItems.length === 0) {
+    return (
+      <div>
+        <h1>Cart</h1>
+        <p>No items in cart (cartItems is empty).</p>
+      </div>
+    );
+  }
 
   return (
     <div>

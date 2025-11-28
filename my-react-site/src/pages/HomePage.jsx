@@ -8,19 +8,19 @@ const HomePage = ({ onItemClick }) => { // <-- added prop for click handler
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    console.log('Fetching items from Flask...');  // Added: debug log
+    console.log('HomePage mounted, fetching items from Flask...');  // Updated: debug log
     fetch('http://127.0.0.1:5000/items')
       .then(response => {
-        console.log('Response received:', response);  // Added: debug log
+        console.log('Items response received:', response);  // Updated: debug log
         return response.json();
       })
       .then(data => {
-        console.log('Data fetched:', data);  // Added: debug log
+        console.log('Items data fetched:', data);  // Updated: debug log
         setItems(data);
         setLoading(false);
       })
       .catch(err => {
-        console.error('Fetch error:', err);  // Added: debug log
+        console.error('Items fetch error:', err);  // Updated: debug log
         setError(err.message);
         setLoading(false);
       });
