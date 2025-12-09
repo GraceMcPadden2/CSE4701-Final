@@ -25,7 +25,7 @@ CREATE TABLE Vendor (
 CREATE TABLE Customer (
     customer_id NUMBER(10) PRIMARY KEY,
     name VARCHAR2(255) NOT NULL,
-    email VARCHAR2(255) UNIQUE,
+    password VARCHAR2(255) NOT NULL,
     phone VARCHAR2(20),
     loyalty_card_no VARCHAR2(50) UNIQUE
 );
@@ -96,6 +96,14 @@ CREATE TABLE Line_Item (
     FOREIGN KEY (product_id) REFERENCES Product(product_id)
 );
 
+CREATE TABLE Cart_Item (
+    customer_id NUMBER NOT NULL,
+    product_id NUMBER NOT NULL,
+    quantity NUMBER NOT NULL,
+    PRIMARY KEY (customer_id, product_id),
+    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id),
+    FOREIGN KEY (product_id) REFERENCES Product(product_id)
+);
 --Insert Mock Enterprise Data--
 INSERT INTO Enterprise VALUES (1, 'RetailCorp', '123 Corporate Way, NY');
 INSERT INTO Enterprise VALUES (2, 'MegaStores', '889 Market St, CA');

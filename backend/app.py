@@ -1,24 +1,10 @@
 import os
 import oracledb  #for Oracle DB connection
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request  # Updated: added request import
 from flask_cors import CORS, cross_origin  # Added: import cross_origin
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:5176"}})
-
-
-# Added: Dummy database: list of fake items (for fallback)
-dummy_items = [
-    {"id": 1, "name": "Laptop", "price": 999.99},
-    {"id": 2, "name": "Mouse", "price": 19.99},
-    {"id": 3, "name": "Keyboard", "price": 49.99}
-]
-
-# Added: Dummy cart data (for fallback)
-dummy_cart = [
-    {"id": 1, "name": "Laptop", "price": 999.99, "quantity": 1},
-    {"id": 2, "name": "Mouse", "price": 19.99, "quantity": 2}
-]
 
 #  Database connection setup
 def get_db_connection():
@@ -45,27 +31,105 @@ def get_items():
     try:
         conn = get_db_connection()
         if conn is None:
-            # DB not available -> fallback
-            return jsonify(dummy_items)
+            return jsonify([])
 
         cursor = conn.cursor()
-        cursor.execute("SELECT pid, pname, unit_price FROM product")
+        cursor.execute("SELECT product_id, name, price FROM product")
         rows = cursor.fetchall()
         items = [{"id": row[0], "name": row[1], "price": float(row[2])} for row in rows]
         cursor.close()
         conn.close()
         return jsonify(items)
     except Exception as e:
-        # Fallback on any other error
         print("Error in /items:", e)
-        return jsonify(dummy_items)
+        return jsonify([])
 
-@app.route('/cart', methods=['GET'])
-@cross_origin()  # Added: explicit CORS for this route
-def get_cart():
-    print("GET /cart called")  # debug: see this in the backend console
-    print("Returning dummy_cart:", dummy_cart)
-    return jsonify(dummy_cart)
+@app.route('/cart/<int:customer_id>', methods=['GET'])
+@cross_origin() 
+def get_cart(customer_id):
+    print(f"GET /cart/{customer_id} called")  # debug: see this in the backend console
+    try:
+        conn = get_db_connection()
+        if conn is None:
+            return jsonify([])
+
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT ci.product_id, p.name, p.price, ci.quantity
+            FROM Cart_Item ci
+            JOIN Product p ON ci.product_id = p.product_id
+            WHERE ci.customer_id = :customer_id
+        """, {"customer_id": customer_id})
+        rows = cursor.fetchall()
+        cart_items = [{"id": row[0], "name": row[1], "price": float(row[2]), "quantity": row[3]} for row in rows]
+        cursor.close()
+        conn.close()
+        print("Returning cart_items from DB:", cart_items)
+        return jsonify(cart_items)
+    except Exception as e:
+        print("Error in /cart:", e)
+        return jsonify([])
+
+@app.route('/login', methods=['POST'])
+@cross_origin()
+def login():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    
+    if not username or not password:
+        return jsonify({"error": "Username and password are required"}), 400
+    
+    try:
+        conn = get_db_connection()
+        if conn is None:
+            return jsonify({"error": "Database unavailable"}), 500
+
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT customer_id FROM Customer
+            WHERE name = :username AND password = :password
+        """, {"username": username, "password": password})
+        row = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        
+        if row:
+            return jsonify({"customer_id": row[0]})
+        else:
+            return jsonify({"error": "Invalid credentials"}), 401
+    except Exception as e:
+        print("Error in /login:", e)
+        return jsonify({"error": "Database error"}), 500
+
+@app.route('/customer/<int:customer_id>', methods=['GET'])
+@cross_origin()
+def get_customer(customer_id):
+    try:
+        conn = get_db_connection()
+        if conn is None:
+            return jsonify({"error": "Database unavailable"}), 500
+
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT name, phone, loyalty_card_no FROM Customer
+            WHERE customer_id = :customer_id
+        """, {"customer_id": customer_id})
+        row = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        
+        if row:
+            return jsonify({
+                "name": row[0],
+                "phone": row[1],
+                "loyalty_card_no": row[2]
+            })
+        else:
+            return jsonify({"error": "Customer not found"}), 404
+    except Exception as e:
+        print("Error in /customer:", e)
+        return jsonify({"error": "Database error"}), 500
 
 @app.route('/health', methods=['GET'])
 def health():

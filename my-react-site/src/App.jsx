@@ -11,6 +11,8 @@ import CreateAccount from './pages/CreateAccount';
 function App() {
   const [page, setPage] = useState('home');
   const [selectedItem, setSelectedItem] = useState(null);
+  const [customerId, setCustomerId] = useState(null);
+  const [customerInfo, setCustomerInfo] = useState(null);
 
   useEffect(() => {
     console.log('Current page:', page);
@@ -19,6 +21,12 @@ function App() {
   const handleItemClick = (item) => {
     setSelectedItem(item);
     setPage('item-details');
+  };
+
+  const handleLogout = () => {
+    setCustomerId(null);
+    setCustomerInfo(null);
+    setPage('home');
   };
 
   return (
@@ -45,10 +53,14 @@ function App() {
             className="login-section"
             onClick={(e) => {
               e.stopPropagation();
-              setPage('login');
+              if (customerId) {
+                handleLogout();
+              } else {
+                setPage('login');
+              }
             }}
           >
-            Log in
+            {customerInfo ? `Hello, ${customerInfo.name}` : 'Log in'}
           </div>
           <img
             src={cartIcon}
@@ -64,9 +76,9 @@ function App() {
         <div className="sub-banner">
         </div>
         {page === 'home' && <HomePage onItemClick={handleItemClick} />} 
-        {page === 'cart' && <CartPage />}
+        {page === 'cart' && <CartPage customerId={customerId} />}
         {page === 'item-details' && <ItemDetailsPage item={selectedItem} />}
-        {page === 'login' && <Login onSwitchToCreateAccount={() => setPage('create-account')} />}
+        {page === 'login' && <Login setCustomerId={setCustomerId} setCustomerInfo={setCustomerInfo} setPage={setPage} onSwitchToCreateAccount={() => setPage('create-account')} />}
         {page === 'create-account' && <CreateAccount onSwitchToLogin={() => setPage('login')} />}
       </main>
       <footer className="site-footer">
