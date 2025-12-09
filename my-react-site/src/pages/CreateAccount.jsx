@@ -1,19 +1,25 @@
 import React, { useState } from 'react';
 
-const Login = ({ onSwitchToCreateAccount }) => {
+const CreateAccount = ({ onSwitchToLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Logged in with:', { username, password });
-    alert('Logged in successfully!');
+    if (password !== confirmPassword) {
+      alert('Passwords do not match!');
+      return;
+    }
+    console.log('Account created with:', { username, password });
+    alert('Account created successfully!');
+    onSwitchToLogin();
   };
 
   return (
     <div className="auth-container">
       <div className="auth-form">
-        <h1>Log In</h1>
+        <h1>Create Account</h1>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Username:</label>
@@ -35,12 +41,22 @@ const Login = ({ onSwitchToCreateAccount }) => {
               className="form-input"
             />
           </div>
-          <button type="submit" className="form-button">Log In</button>
+          <div className="form-group">
+            <label>Confirm Password:</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              className="form-input"
+            />
+          </div>
+          <button type="submit" className="form-button">Create Account</button>
         </form>
-        <p className="auth-link">Don't have an account? <button onClick={onSwitchToCreateAccount} className="link-button">Create Account</button></p>
+        <p className="auth-link">Already have an account? <button onClick={onSwitchToLogin} className="link-button">Log In</button></p>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default CreateAccount;

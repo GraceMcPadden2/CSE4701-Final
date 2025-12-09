@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import cartIcon from './assets/cart.svg'; 
-import searchIcon from './assets/search.svg'; // Import the search icon
-import HomePage from './pages/HomePage'; // <-- existing import
-import CartPage from './pages/CartPage'; // <-- existing import
-import ItemDetailsPage from './pages/ItemDetailsPage'; // <-- existing import
-import Login from './pages/Login'; // <-- new import
+import searchIcon from './assets/search.svg';
+import HomePage from './pages/HomePage';
+import CartPage from './pages/CartPage';
+import ItemDetailsPage from './pages/ItemDetailsPage';
+import Login from './pages/Login';
+import CreateAccount from './pages/CreateAccount';
 
 function App() {
   const [page, setPage] = useState('home');
-  const [selectedItem, setSelectedItem] = useState(null); // <-- new state for selected item
+  const [selectedItem, setSelectedItem] = useState(null);
 
   useEffect(() => {
     console.log('Current page:', page);
@@ -29,7 +30,7 @@ function App() {
             type="text"
             placeholder="Search..."
             className="search-bar"
-            onClick={(e) => e.stopPropagation()} // Prevent triggering the banner click
+            onClick={(e) => e.stopPropagation()}
           />
           <div
             className="search-icon"
@@ -43,8 +44,8 @@ function App() {
           <div
             className="login-section"
             onClick={(e) => {
-              e.stopPropagation(); // do not trigger banner click
-              setPage('login'); // <-- changed to navigate to login
+              e.stopPropagation();
+              setPage('login');
             }}
           >
             Log in
@@ -54,7 +55,7 @@ function App() {
             alt="Shopping Cart"
             className="cart-icon"
             onClick={(e) => {
-              e.stopPropagation(); // Prevent triggering the banner click
+              e.stopPropagation();
               console.log('Cart icon clicked');
               setPage('cart');
             }}
@@ -65,7 +66,8 @@ function App() {
         {page === 'home' && <HomePage onItemClick={handleItemClick} />} 
         {page === 'cart' && <CartPage />}
         {page === 'item-details' && <ItemDetailsPage item={selectedItem} />}
-        {page === 'login' && <Login />}
+        {page === 'login' && <Login onSwitchToCreateAccount={() => setPage('create-account')} />}
+        {page === 'create-account' && <CreateAccount onSwitchToLogin={() => setPage('login')} />}
       </main>
       <footer className="site-footer">
         <div className="site-footer-inner">

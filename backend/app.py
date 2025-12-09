@@ -1,5 +1,5 @@
 import os
-import cx_Oracle  #for Oracle DB connection
+import oracledb  #for Oracle DB connection
 from flask import Flask, jsonify
 from flask_cors import CORS, cross_origin  # Added: import cross_origin
 
@@ -23,25 +23,25 @@ dummy_cart = [
 #  Database connection setup
 def get_db_connection():
     try:
-        dsn = cx_Oracle.makedsn(
-            os.getenv('DB_HOST', 'localhost'),
-            int(os.getenv('DB_PORT', 1521)),
-            os.getenv('DB_SID', 'XE')
+        dsn = oracledb.makedsn(
+            host="localhost",
+            port=1521,
+            service_name="FREE" 
         )
-        return cx_Oracle.connect(
-            user=os.getenv('DB_USER'),
-            password=os.getenv('DB_PASSWORD'),
+
+        return oracledb.connect(
+            user="system",
+            password="MyPassword123",
             dsn=dsn
         )
+
     except Exception as e:
-        # Log and return None when DB is not available
         print("DB connection failed:", e)
         return None
 
 @app.route('/items', methods=['GET'])
-@cross_origin()  # Added: explicit CORS for this route
+@cross_origin() 
 def get_items():
-    # Fetch from product table instead of dummy data
     try:
         conn = get_db_connection()
         if conn is None:
@@ -49,7 +49,7 @@ def get_items():
             return jsonify(dummy_items)
 
         cursor = conn.cursor()
-        cursor.execute("SELECT product_id, name, price FROM product")
+        cursor.execute("SELECT pid, pname, unit_price FROM product")
         rows = cursor.fetchall()
         items = [{"id": row[0], "name": row[1], "price": float(row[2])} for row in rows]
         cursor.close()
