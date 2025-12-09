@@ -1,110 +1,154 @@
- -- Enterprise
+DROP TABLE Line_Item CASCADE CONSTRAINTS;
+DROP TABLE Transaction_Sale CASCADE CONSTRAINTS;
+DROP TABLE Product CASCADE CONSTRAINTS;
+DROP TABLE Product_Type CASCADE CONSTRAINTS;
+DROP TABLE Brand CASCADE CONSTRAINTS;
+DROP TABLE Store CASCADE CONSTRAINTS;
+DROP TABLE Customer CASCADE CONSTRAINTS;
+DROP TABLE Vendor CASCADE CONSTRAINTS;
+DROP TABLE Enterprise CASCADE CONSTRAINTS;
+-- 2. Strong Entities
+
 CREATE TABLE Enterprise (
-    enterprise_id        NUMBER PRIMARY KEY,
-    name                 VARCHAR2(255) NOT NULL,
+    enterprise_id NUMBER(10) PRIMARY KEY,
+    name VARCHAR2(255) NOT NULL,
     headquarters_address VARCHAR2(255)
 );
 
--- Vendor
-CREATE TABLE VENDOR (
-    vendor_id            NUMBER PRIMARY KEY,
-    name                 VARCHAR2(255) NOT NULL,
-    address              VARCHAR2(255),
-    contact_info         VARCHAR2(255)
+CREATE TABLE Vendor (
+    vendor_id NUMBER(10) PRIMARY KEY,
+    name VARCHAR2(255) NOT NULL,
+    address VARCHAR2(255),
+    contact_info VARCHAR2(255)
 );
 
--- Store
-CREATE TABLE STORE (
-    store_id             NUMBER PRIMARY KEY,
-    enterprise_id        NUMBER NOT NULL,
-    vendor_id            NUMBER,
-    address              VARCHAR2(255),
-    city                 VARCHAR2(100),
-    state                VARCHAR2(50),
-    hours                VARCHAR2(255),
-
-    CONSTRAINT fk_store_enterprise FOREIGN KEY (enterprise_id)
-        REFERENCES Enterprise (enterprise_id),
-
-    CONSTRAINT fk_store_vendor FOREIGN KEY (vendor_id)
-        REFERENCES VENDOR (vendor_id)
+CREATE TABLE Customer (
+    customer_id NUMBER(10) PRIMARY KEY,
+    name VARCHAR2(255) NOT NULL,
+    email VARCHAR2(255) UNIQUE,
+    phone VARCHAR2(20),
+    loyalty_card_no VARCHAR2(50) UNIQUE
 );
 
-CREATE INDEX idx_store_enterprise ON Store (enterprise_id);
-CREATE INDEX idx_store_vendor ON Store (vendor_id);
+CREATE TABLE Store (
+    store_id NUMBER(10) PRIMARY KEY,
+    enterprise_id NUMBER(10) NOT NULL,
+    address VARCHAR2(255),
+    city VARCHAR2(50),
+    state VARCHAR2(50),
+    hours VARCHAR2(100),
+    FOREIGN KEY (enterprise_id) REFERENCES Enterprise(enterprise_id)
+);
 
- -- Brand
 CREATE TABLE Brand (
-    brand_id             NUMBER PRIMARY KEY,
-    vendor_id            NUMBER NOT NULL,
-    name                 VARCHAR2(255) NOT NULL,
-    description          VARCHAR2(400),
-
-    CONSTRAINT fk_brand_vendor FOREIGN KEY (vendor_id)
-        REFERENCES Vendor (vendor_id)
+    brand_id NUMBER(10) PRIMARY KEY,
+    vendor_id NUMBER(10) NOT NULL,
+    name VARCHAR2(255) NOT NULL,
+    description VARCHAR2(4000), 
+    FOREIGN KEY (vendor_id) REFERENCES Vendor(vendor_id)
 );
 
-CREATE INDEX idx_brand_vendor ON Brand (vendor_id);
+-- 3. Hierarchical Entity
 
--- PRODUCT TYPE
-CREATE TABLE product_type (
-    type_id        SERIAL PRIMARY KEY,
-    parent_type_id INT,
-    type_name      VARCHAR(100) NOT NULL,
-    CONSTRAINT fk_product_type_parent
-        FOREIGN KEY (parent_type_id)
-        REFERENCES product_type(type_id)
+CREATE TABLE Product_Type (
+    type_id NUMBER(10) PRIMARY KEY,
+    parent_type_id NUMBER(10), 
+    type_name VARCHAR2(255) NOT NULL,
+    FOREIGN KEY (parent_type_id) REFERENCES Product_Type(type_id)
 );
 
--- PRODUCT
-CREATE TABLE product (
-    product_id SERIAL PRIMARY KEY,
-    brand_id   INT NOT NULL,
-    type_id    INT NOT NULL,
-    name       VARCHAR(150) NOT NULL,
-    size       VARCHAR(50),
-    price      NUMERIC(10,2) NOT NULL,
-    FOREIGN KEY (brand_id) REFERENCES brand(brand_id),
-    FOREIGN KEY (type_id) REFERENCES product_type(type_id)
+-- 4. Product 
+
+CREATE TABLE Product (
+    product_id NUMBER(10) PRIMARY KEY,
+    brand_id NUMBER(10) NOT NULL,
+    type_id NUMBER(10) NOT NULL,
+    name VARCHAR2(255) NOT NULL,
+    -- Renamed 'size' to 'product_size'
+    product_size VARCHAR2(50), 
+    price DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (brand_id) REFERENCES Brand(brand_id),
+    FOREIGN KEY (type_id) REFERENCES Product_Type(type_id)
 );
 
--- CUSTOMER
-CREATE TABLE customer (
-    customer_id     SERIAL PRIMARY KEY,
-    name            VARCHAR(150) NOT NULL,
-    email           VARCHAR(150) UNIQUE,
-    phone           VARCHAR(30),
-    loyalty_card_no VARCHAR(50) UNIQUE
+-- 5. Transaction Entity
+
+CREATE TABLE Transaction_Sale (
+    transaction_id NUMBER(10) PRIMARY KEY,
+    store_id NUMBER(10) NOT NULL,
+    customer_id NUMBER(10) NOT NULL,
+    -- Replaced DATETIME with DATE
+    transaction_date DATE NOT NULL, 
+    total_amount DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (store_id) REFERENCES Store(store_id),
+    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id)
 );
 
--- STORE
-CREATE TABLE store (
-    store_id   SERIAL PRIMARY KEY,
-    name       VARCHAR(150) NOT NULL,
-    address    VARCHAR(255),
-    city       VARCHAR(100),
-    state      VARCHAR(50),
-    hours      VARCHAR(100)
+-- 7. Weak/Associative Entity (Line Item)
+
+CREATE TABLE Line_Item (
+    transaction_id NUMBER(10) NOT NULL,
+    product_id NUMBER(10) NOT NULL,
+    quantity NUMBER(10) NOT NULL,
+    subtotal DECIMAL(10, 2) NOT NULL,
+    PRIMARY KEY (transaction_id, product_id),
+    FOREIGN KEY (transaction_id) REFERENCES Transaction_Sale(transaction_id),
+    FOREIGN KEY (product_id) REFERENCES Product(product_id)
 );
 
--- TRANSACTION / SALE
-CREATE TABLE transaction_sale (
-    transaction_id   SERIAL PRIMARY KEY,
-    store_id         INT NOT NULL,
-    customer_id      INT,
-    transaction_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    total_amount     NUMERIC(10,2) NOT NULL,
-    FOREIGN KEY (store_id) REFERENCES store(store_id),
-    FOREIGN KEY (customer_id) REFERENCES customer(customer_id)
-);
+--Insert Mock Enterprise Data--
+INSERT INTO Enterprise VALUES (1, 'RetailCorp', '123 Corporate Way, NY');
+INSERT INTO Enterprise VALUES (2, 'MegaStores', '889 Market St, CA');
 
--- MARKET BASKET / LINE ITEM
-CREATE TABLE line_item (
-    line_id        SERIAL PRIMARY KEY,
-    transaction_id INT NOT NULL,
-    product_id     INT NOT NULL,
-    quantity       INT NOT NULL CHECK (quantity > 0),
-    subtotal       NUMERIC(10,2) NOT NULL,
-    FOREIGN KEY (transaction_id) REFERENCES transaction_sale(transaction_id),
-    FOREIGN KEY (product_id) REFERENCES product(product_id)
-);
+--Insert Vendor Mock Data--
+INSERT INTO Vendor VALUES (1, 'FreshFoods Inc.', '12 Farm Rd, IA', '555-1111');
+INSERT INTO Vendor VALUES (2, 'TechSupply Co.', '89 Silicon Ave, CA', '555-2222');
+
+--Insert Customer Mock Data--
+INSERT INTO Customer VALUES (1, 'Alice Johnson', 'alice@example.com', '555-1001', 'LC1001');
+INSERT INTO Customer VALUES (2, 'Bob Smith', 'bob@example.com', '555-1002', 'LC1002');
+INSERT INTO Customer VALUES (3, 'Charlie Davis', 'charlie@example.com', '555-1003', 'LC1003');
+
+--Insert Stores Mock Data--
+INSERT INTO Store VALUES (1, 1, '101 Main St', 'New York', 'NY', '9am-9pm');
+INSERT INTO Store VALUES (2, 1, '202 Broadway', 'Brooklyn', 'NY', '10am-8pm');
+INSERT INTO Store VALUES (3, 2, '77 Market Ave', 'San Jose', 'CA', '9am-10pm');
+
+--Insert Brands Mock Data--
+INSERT INTO Brand VALUES (1, 1, 'FreshFarm', 'Organic grocery products');
+INSERT INTO Brand VALUES (2, 2, 'TechPro', 'Consumer electronics');
+INSERT INTO Brand VALUES (3, 1, 'NatureLife', 'Eco-friendly household goods');
+
+--Insert Product Types (Hierarchy)
+INSERT INTO Product_Type VALUES (1, NULL, 'Food');
+INSERT INTO Product_Type VALUES (2, 1, 'Fruit');
+INSERT INTO Product_Type VALUES (3, 1, 'Snacks');
+INSERT INTO Product_Type VALUES (4, NULL, 'Electronics');
+INSERT INTO Product_Type VALUES (5, 4, 'Headphones');
+
+--Insert Products Mock Data--
+INSERT INTO Product VALUES (1, 1, 2, 'Banana Bunch', '1 lb', 1.99);
+INSERT INTO Product VALUES (2, 1, 3, 'Granola Bar', 'Single', 0.99);
+INSERT INTO Product VALUES (3, 2, 5, 'TechPro Headphones', 'Standard', 49.99);
+INSERT INTO Product VALUES (4, 3, 3, 'Organic Chips', 'Medium Bag', 2.49);
+INSERT INTO Product VALUES (5, 3, 2, 'Organic Apples', '2 lb Bag', 3.99);
+
+--Insert Transaction Date--
+INSERT INTO Transaction_Sale VALUES (1, 1, 1, DATE '2024-01-15', 52.97);
+INSERT INTO Transaction_Sale VALUES (2, 2, 2, DATE '2024-01-17', 4.48);
+INSERT INTO Transaction_Sale VALUES (3, 3, 3, DATE '2024-01-18', 1.99);
+
+--Insert Line Item (Weak Entity) Mock Data--
+-- Transaction 1
+INSERT INTO Line_Item VALUES (1, 3, 1, 49.99);  -- Headphones
+INSERT INTO Line_Item VALUES (1, 4, 1, 2.49);   -- Organic Chips
+INSERT INTO Line_Item VALUES (1, 1, 1, 1.99);   -- Banana
+
+-- Transaction 2
+INSERT INTO Line_Item VALUES (2, 5, 1, 3.99);   -- Organic Apples
+INSERT INTO Line_Item VALUES (2, 2, 1, 0.49);   -- Granola Bar (discount example)
+
+-- Transaction 3
+INSERT INTO Line_Item VALUES (3, 1, 1, 1.99);   -- Banana
+
+COMMIT;
