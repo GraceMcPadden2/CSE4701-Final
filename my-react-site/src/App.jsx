@@ -15,6 +15,18 @@ function App() {
   const [customerInfo, setCustomerInfo] = useState(null);
 
   useEffect(() => {
+    // Load from localStorage on mount
+    const savedCustomerId = localStorage.getItem('customerId');
+    const savedCustomerInfo = localStorage.getItem('customerInfo');
+    if (savedCustomerId) {
+      setCustomerId(parseInt(savedCustomerId));
+    }
+    if (savedCustomerInfo) {
+      setCustomerInfo(JSON.parse(savedCustomerInfo));
+    }
+  }, []);
+
+  useEffect(() => {
     console.log('Current page:', page);
   }, [page]);
 
@@ -26,6 +38,8 @@ function App() {
   const handleLogout = () => {
     setCustomerId(null);
     setCustomerInfo(null);
+    localStorage.removeItem('customerId');
+    localStorage.removeItem('customerInfo');
     setPage('home');
   };
 
@@ -77,8 +91,14 @@ function App() {
         </div>
         {page === 'home' && <HomePage onItemClick={handleItemClick} />} 
         {page === 'cart' && <CartPage customerId={customerId} />}
-        {page === 'item-details' && <ItemDetailsPage item={selectedItem} />}
-        {page === 'login' && <Login setCustomerId={setCustomerId} setCustomerInfo={setCustomerInfo} setPage={setPage} onSwitchToCreateAccount={() => setPage('create-account')} />}
+        {page === 'item-details' && <ItemDetailsPage item={selectedItem} customerId={customerId} />}
+        {page === 'login' && <Login setCustomerId={(id) => {
+          setCustomerId(id);
+          localStorage.setItem('customerId', id);
+        }} setCustomerInfo={(info) => {
+          setCustomerInfo(info);
+          localStorage.setItem('customerInfo', JSON.stringify(info));
+        }} setPage={setPage} onSwitchToCreateAccount={() => setPage('create-account')} />}
         {page === 'create-account' && <CreateAccount onSwitchToLogin={() => setPage('login')} />}
       </main>
       <footer className="site-footer">

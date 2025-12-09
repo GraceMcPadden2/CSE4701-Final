@@ -70,6 +70,54 @@ def get_cart(customer_id):
         print("Error in /cart:", e)
         return jsonify([])
 
+@app.route('/cart', methods=['POST'])
+@cross_origin()
+def add_to_cart():
+    data = request.get_json()
+    customer_id = data.get('customer_id')
+    product_id = data.get('product_id')
+    quantity = data.get('quantity')
+    
+    if not customer_id or not product_id or quantity is None:
+        return jsonify({"error": "customer_id, product_id, and quantity are required"}), 400
+    
+    try:
+        conn = get_db_connection()
+        if conn is None:
+            return jsonify({"error": "Database unavailable"}), 500
+
+        cursor = conn.cursor()
+        
+        # Check if item already in cart
+        cursor.execute("""
+            SELECT quantity FROM Cart_Item
+            WHERE customer_id = :customer_id AND product_id = :product_id
+        """, {"customer_id": customer_id, "product_id": product_id})
+        row = cursor.fetchone()
+        
+        if row:
+            # Update quantity
+            new_quantity = row[0] + quantity
+            cursor.execute("""
+                UPDATE Cart_Item
+                SET quantity = :quantity
+                WHERE customer_id = :customer_id AND product_id = :product_id
+            """, {"quantity": new_quantity, "customer_id": customer_id, "product_id": product_id})
+        else:
+            # Insert new
+            cursor.execute("""
+                INSERT INTO Cart_Item (customer_id, product_id, quantity)
+                VALUES (:customer_id, :product_id, :quantity)
+            """, {"customer_id": customer_id, "product_id": product_id, "quantity": quantity})
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return jsonify({"message": "Item added to cart"}), 200
+    except Exception as e:
+        print("Error in /cart POST:", e)
+        return jsonify({"error": "Database error"}), 500
+
 @app.route('/login', methods=['POST'])
 @cross_origin()
 def login():

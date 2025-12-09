@@ -26,6 +26,7 @@ CREATE TABLE Customer (
     customer_id NUMBER(10) PRIMARY KEY,
     name VARCHAR2(255) NOT NULL,
     password VARCHAR2(255) NOT NULL,
+    username VARCHAR2(255) NOT NULL UNIQUE,
     phone VARCHAR2(20),
     loyalty_card_no VARCHAR2(50) UNIQUE
 );

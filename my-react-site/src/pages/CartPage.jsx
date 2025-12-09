@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
 
-const CartPage = () => {
+const CartPage = ({ customerId }) => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    if (!customerId) {
+      setLoading(false);
+      return;
+    }
     console.log('CartPage mounted');
     console.log('Fetching cart from Flask...');
-    fetch('http://127.0.0.1:5000/cart')
+    fetch(`http://127.0.0.1:5000/cart/${customerId}`)
       .then(response => {
         console.log('Raw cart response:', response);
         if (!response.ok) {
@@ -26,11 +30,20 @@ const CartPage = () => {
         setError(err.message);
         setLoading(false);
       });
-  }, []);
+  }, [customerId]);
 
   useEffect(() => {
     console.log('cartItems state now:', cartItems);
   }, [cartItems]);
+
+  if (!customerId) {
+    return (
+      <div>
+        <h1>Cart</h1>
+        <p>Please log in to view your cart.</p>
+      </div>
+    );
+  }
 
   if (loading) return <p>Loading cart...</p>;
   if (error) return <p>Error loading cart: {error}</p>;
@@ -39,7 +52,7 @@ const CartPage = () => {
     return (
       <div>
         <h1>Cart</h1>
-        <p>No items in cart (cartItems is empty).</p>
+        <p>No items in cart.</p>
       </div>
     );
   }
