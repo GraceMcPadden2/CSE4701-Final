@@ -9,6 +9,10 @@ DROP TABLE Vendor CASCADE CONSTRAINTS;
 DROP TABLE Enterprise CASCADE CONSTRAINTS;
 -- 2. Strong Entities
 
+CREATE SEQUENCE customer_seq
+START WITH 100000
+INCREMENT BY 1;
+
 CREATE TABLE Enterprise (
     enterprise_id NUMBER(10) PRIMARY KEY,
     name VARCHAR2(255) NOT NULL,
@@ -25,8 +29,8 @@ CREATE TABLE Vendor (
 CREATE TABLE Customer (
     customer_id NUMBER(10) PRIMARY KEY,
     name VARCHAR2(255) NOT NULL,
-    password VARCHAR2(255) NOT NULL,
     username VARCHAR2(255) NOT NULL UNIQUE,
+    password VARCHAR2(255) NOT NULL,
     phone VARCHAR2(20),
     loyalty_card_no VARCHAR2(50) UNIQUE
 );
@@ -114,9 +118,9 @@ INSERT INTO Vendor VALUES (1, 'FreshFoods Inc.', '12 Farm Rd, IA', '555-1111');
 INSERT INTO Vendor VALUES (2, 'TechSupply Co.', '89 Silicon Ave, CA', '555-2222');
 
 --Insert Customer Mock Data--
-INSERT INTO Customer VALUES (1, 'Alice Johnson', 'alice@example.com', '555-1001', 'LC1001');
-INSERT INTO Customer VALUES (2, 'Bob Smith', 'bob@example.com', '555-1002', 'LC1002');
-INSERT INTO Customer VALUES (3, 'Charlie Davis', 'charlie@example.com', '555-1003', 'LC1003');
+INSERT INTO Customer VALUES (1,'AliceJohnson', 'Alice Johnson', 'password', '555-1001', 'LC1001');
+INSERT INTO Customer VALUES (2,'BobSmith', 'Bob Smith', 'password1', '555-1002', 'LC1002');
+INSERT INTO Customer VALUES (3, 'CharlieDavis', 'Charlie Davis', 'password123', '555-1003', 'LC1003');
 
 --Insert Stores Mock Data--
 INSERT INTO Store VALUES (1, 1, '101 Main St', 'New York', 'NY', '9am-9pm');

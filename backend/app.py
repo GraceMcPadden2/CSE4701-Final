@@ -179,6 +179,70 @@ def get_customer(customer_id):
         print("Error in /customer:", e)
         return jsonify({"error": "Database error"}), 500
 
+@app.route('/search', methods=['GET'])
+@cross_origin()
+def search_items():
+    q = request.args.get('q', '')
+    if not q:
+        return jsonify([])
+    
+    try:
+        conn = get_db_connection()
+        if conn is None:
+            return jsonify([])
+
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT product_id, name, price FROM Product
+            WHERE LOWER(name) LIKE '%' || :q || '%'
+        """, {"q": q})
+        rows = cursor.fetchall()
+        items = [{"id": row[0], "name": row[1], "price": float(row[2])} for row in rows]
+        cursor.close()
+        conn.close()
+        return jsonify(items)
+    except Exception as e:
+        print("Error in /search:", e)
+        return jsonify([])
+
+
+@app.route('/register', methods=['POST'])
+@cross_origin()
+def register():
+    data = request.get_json()
+    name = data.get('name')
+    username = data.get('username')
+    password = data.get('password')
+    phone = data.get('phone')
+    loyalty_card_no = data.get('loyalty_card_no')
+    
+    if not name or not username or not password:
+        return jsonify({"error": "Name, username, and password are required"}), 400
+    
+    try:
+        conn = get_db_connection()
+        if conn is None:
+            return jsonify({"error": "Database unavailable"}), 500
+
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO Customer (customer_id, name, password, username, phone, loyalty_card_no)
+            VALUES (customer_seq.NEXTVAL, :name, :password, :username, :phone, :loyalty_card_no)
+        """, {
+            "name": name,
+            "password": password,
+            "username": username,
+            "phone": phone,
+            "loyalty_card_no": loyalty_card_no
+        })
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return jsonify({"message": "Account created successfully"}), 201
+    except Exception as e:
+        print("Error in /register:", e)
+        return jsonify({"error": "Database error or duplicate username/loyalty card"}), 500
+
 @app.route('/health', methods=['GET'])
 def health():
     return jsonify({"status": "ok"}), 200

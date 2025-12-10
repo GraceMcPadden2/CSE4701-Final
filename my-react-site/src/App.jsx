@@ -7,12 +7,15 @@ import CartPage from './pages/CartPage';
 import ItemDetailsPage from './pages/ItemDetailsPage';
 import Login from './pages/Login';
 import CreateAccount from './pages/CreateAccount';
+import SearchPage from './pages/SearchPage';
 
 function App() {
   const [page, setPage] = useState('home');
   const [selectedItem, setSelectedItem] = useState(null);
   const [customerId, setCustomerId] = useState(null);
   const [customerInfo, setCustomerInfo] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [submittedQuery, setSubmittedQuery] = useState('');
 
   useEffect(() => {
     // Load from localStorage on mount
@@ -43,6 +46,11 @@ function App() {
     setPage('home');
   };
 
+  const handleSearchSubmit = () => {
+    setSubmittedQuery(searchQuery);
+    setPage('search');
+  };
+
   return (
     <div className="app-root">
       <main className="site-main">
@@ -52,13 +60,20 @@ function App() {
             type="text"
             placeholder="Search..."
             className="search-bar"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleSearchSubmit();
+              }
+            }}
             onClick={(e) => e.stopPropagation()}
           />
           <div
             className="search-icon"
             onClick={(e) => {
               e.stopPropagation();
-              console.log('Search icon clicked');
+              handleSearchSubmit();
             }}
           >
             <img src={searchIcon} alt="Search Icon" className="search-icon-img" />
@@ -100,6 +115,7 @@ function App() {
           localStorage.setItem('customerInfo', JSON.stringify(info));
         }} setPage={setPage} onSwitchToCreateAccount={() => setPage('create-account')} />}
         {page === 'create-account' && <CreateAccount onSwitchToLogin={() => setPage('login')} />}
+        {page === 'search' && <SearchPage query={submittedQuery} onItemClick={handleItemClick} />}
       </main>
       <footer className="site-footer">
         <div className="site-footer-inner">

@@ -40,7 +40,6 @@ const CartPage = ({ customerId }) => {
     return (
       <div>
         <h1>Cart</h1>
-        <p>Please log in to view your cart.</p>
       </div>
     );
   }
