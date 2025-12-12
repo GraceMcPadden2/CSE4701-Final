@@ -1,11 +1,11 @@
 # CSE4701-Final
-
-[![Demo Video](https://img.youtube.com/vi/VIDEO_ID/0.jpg)](https://youtu.be/jERv4-iyf8M)
+## Click to play video demo ⬇️⬇️
+[![Demo Video](thumbnail.png)](https://youtu.be/jERv4-iyf8M)
 
 ## Database Schema
 ![ER Diagram](ER.png)
 
-Database was implemented using ORACLE
+Database was implemented using oracle
 
 ## Web Application
 ![Webapp Structure](Webapp.png)
