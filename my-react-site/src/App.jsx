@@ -8,35 +8,27 @@ import ItemDetailsPage from './pages/ItemDetailsPage';
 import Login from './pages/Login';
 import CreateAccount from './pages/CreateAccount';
 import SearchPage from './pages/SearchPage';
-import PastPurchasesPage from './pages/PastPurchasesPage'; // add
+import PastPurchasesPage from './pages/PastPurchasesPage';
 
 function App() {
-  const [page, setPage] = useState('home');
+  const [currentPage, setCurrentPage] = useState('home'); // 'home' | 'search' | 'item' | 'cart' | 'purchases'
   const [selectedItem, setSelectedItem] = useState(null);
-  const [customerId, setCustomerId] = useState(null);
-  const [customerInfo, setCustomerInfo] = useState(null);
+  const [customerId, setCustomerId] = useState(
+    Number(localStorage.getItem('customerId')) || null
+  );
+  const [customerInfo, setCustomerInfo] = useState(
+    JSON.parse(localStorage.getItem('customerInfo')) || null
+  );
   const [searchQuery, setSearchQuery] = useState('');
   const [submittedQuery, setSubmittedQuery] = useState('');
 
   useEffect(() => {
-    // Load from localStorage on mount
-    const savedCustomerId = localStorage.getItem('customerId');
-    const savedCustomerInfo = localStorage.getItem('customerInfo');
-    if (savedCustomerId) {
-      setCustomerId(parseInt(savedCustomerId));
-    }
-    if (savedCustomerInfo) {
-      setCustomerInfo(JSON.parse(savedCustomerInfo));
-    }
-  }, []);
-
-  useEffect(() => {
-    console.log('Current page:', page);
-  }, [page]);
+    console.log('Current page:', currentPage);
+  }, [currentPage]);
 
   const handleItemClick = (item) => {
     setSelectedItem(item);
-    setPage('item-details');
+    setCurrentPage('item');
   };
 
   const handleLogout = () => {
@@ -44,21 +36,21 @@ function App() {
     setCustomerInfo(null);
     localStorage.removeItem('customerId');
     localStorage.removeItem('customerInfo');
-    setPage('home');
+    setCurrentPage('home');
   };
 
   const handleSearchSubmit = () => {
     setSubmittedQuery(searchQuery);
-    setPage('search');
+    setCurrentPage('search');
   };
 
-  const handleSwitchToCreateAccount = () => setPage('create-account');
-  const handleSwitchToLogin = () => setPage('login');
+  const handleSwitchToCreateAccount = () => setCurrentPage('create-account');
+  const handleSwitchToLogin = () => setCurrentPage('login');
 
   return (
     <div className="app-root">
       <main className="site-main">
-        <div className="banner" onClick={() => setPage('home')}>
+        <div className="banner" onClick={() => setCurrentPage('home')}>
           Amazon
           <input
             type="text"
@@ -89,7 +81,7 @@ function App() {
               if (customerId) {
                 handleLogout();
               } else {
-                setPage('login');
+                setCurrentPage('login');
               }
             }}
           >
@@ -102,25 +94,25 @@ function App() {
             onClick={(e) => {
               e.stopPropagation();
               console.log('Cart icon clicked');
-              setPage('cart');
+              setCurrentPage('cart');
             }}
           />
         </div>
         <div className="sub-banner">
         </div>
-        {page === 'home' && <HomePage onItemClick={handleItemClick} />} 
-        {page === 'cart' && <CartPage customerId={customerId} setPage={setPage} />} {/* pass setPage */}
-        {page === 'item-details' && <ItemDetailsPage item={selectedItem} customerId={customerId} />}
-        {page === 'login' && <Login setCustomerId={(id) => {
+        {currentPage === 'home' && <HomePage onItemClick={handleItemClick} />} 
+        {currentPage === 'cart' && <CartPage customerId={customerId} setPage={setCurrentPage} />}
+        {currentPage === 'item' && <ItemDetailsPage item={selectedItem} customerId={customerId} />}
+        {currentPage === 'login' && <Login setCustomerId={(id) => {
           setCustomerId(id);
           localStorage.setItem('customerId', id);
         }} setCustomerInfo={(info) => {
           setCustomerInfo(info);
           localStorage.setItem('customerInfo', JSON.stringify(info));
-        }} setPage={setPage} onSwitchToCreateAccount={handleSwitchToCreateAccount} />}
-        {page === 'create-account' && <CreateAccount setCustomerId={setCustomerId} setCustomerInfo={setCustomerInfo} setPage={setPage} onSwitchToLogin={handleSwitchToLogin} />}
-        {page === 'search' && <SearchPage query={submittedQuery} onItemClick={handleItemClick} />}
-        {page === 'purchases' && <PastPurchasesPage />} {/* new route-like branch */}
+        }} setPage={setCurrentPage} onSwitchToCreateAccount={handleSwitchToCreateAccount} />}
+        {currentPage === 'create-account' && <CreateAccount setCustomerId={setCustomerId} setCustomerInfo={setCustomerInfo} setPage={setCurrentPage} onSwitchToLogin={handleSwitchToLogin} />}
+        {currentPage === 'search' && <SearchPage query={submittedQuery} onItemClick={handleItemClick} />}
+        {currentPage === 'purchases' && <PastPurchasesPage customerId={customerId} />}
       </main>
       <footer className="site-footer">
         <div className="site-footer-inner">

@@ -28,9 +28,30 @@ const SearchPage = ({ query, onItemClick }) => {
 
   return (
     <div style={{ marginTop: '5px' }}>
-      <ul style={{ display: 'block', width: '100%', padding: 0, margin: 5, listStyle: 'none' }}>
+      <ul
+        style={{
+          display: 'block',
+          width: '100%',
+          padding: 0,
+          margin: 5,
+          listStyle: 'none',
+        }}
+      >
         {results.map((item) => (
-          <li key={item.id} onClick={() => onItemClick(item)} style={{ width: 'calc(100% - 40px)', padding: '20px', marginBottom: '10px', marginRight: '40px', background: '#fff', border: '1px solid #ddd', borderRadius: '5px', boxSizing: 'border-box' }}>
+          <li
+            key={item.id}
+            onClick={() => onItemClick(item)} // this now routes to ItemDetailsPage via App
+            style={{
+              width: 'calc(100% - 40px)',
+              padding: '20px',
+              marginBottom: '10px',
+              marginRight: '40px',
+              background: '#fff',
+              border: '1px solid #ddd',
+              borderRadius: '5px',
+              boxSizing: 'border-box',
+            }}
+          >
             <h2>{item.name}</h2>
             <p>Price: {item.price}</p>
           </li>

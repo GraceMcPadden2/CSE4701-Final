@@ -39,6 +39,26 @@ const ItemDetailsPage = ({ item, customerId }) => {
         <div className="item-info-section">
           <h1 className="item-title">{item.name}</h1>
           <p className="item-price">${item.price}</p>
+
+          {/* New: vendor / brand / product type info */}
+          <div style={{ marginBottom: '10px' }}>
+            {item.brand && (
+              <p>
+                <strong>Brand:</strong> {item.brand}
+              </p>
+            )}
+            {item.type && (
+              <p>
+                <strong>Product Type:</strong> {item.type}
+              </p>
+            )}
+            {item.vendor && (
+              <p>
+                <strong>Vendor:</strong> {item.vendor}
+              </p>
+            )}
+          </div>
+
           <div className="description-section">
             <label htmlFor="description" className="description-label">Description:</label>
             <textarea

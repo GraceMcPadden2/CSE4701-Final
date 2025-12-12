@@ -33,10 +33,14 @@ const PastPurchasesPage = ({ customerId: customerIdProp }) => {
   );
 
   return (
-    <div>
-      <h1>Past Purchases</h1>
+    <div style={{ maxWidth: '800px', margin: '2rem auto' }}>
+      <h1 style={{ marginBottom: '1rem' }}>Past Purchases</h1>
 
       {loading && <p>Loading...</p>}
+
+      {!loading && transactions.length === 0 && (
+        <p>You have no past purchases yet.</p>
+      )}
 
       {!loading && transactions.length > 0 && (
         <>
@@ -44,28 +48,48 @@ const PastPurchasesPage = ({ customerId: customerIdProp }) => {
             <div
               key={t.transaction_id}
               style={{
-                border: '1px solid #ccc',
+                border: '1px solid #ddd',
+                borderRadius: '8px',
                 padding: '1rem',
                 marginBottom: '1rem',
+                backgroundColor: '#fafafa',
               }}
             >
-              <p>
-                Date:{' '}
-                {t.transaction_date
-                  ? new Date(t.transaction_date).toLocaleString()
-                  : 'N/A'}
-              </p>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  marginBottom: '0.5rem',
+                }}
+              >
+                <span>
+                  <strong>Order #{t.transaction_id}</strong>
+                </span>
+                <span>
+                  {t.transaction_date
+                    ? new Date(t.transaction_date).toLocaleString()
+                    : 'N/A'}
+                </span>
+              </div>
 
-              <p>Total: ${t.total_amount?.toFixed(2)}</p>
-
-              <ul>
+              <ul style={{ paddingLeft: '1.2rem', margin: '0.5rem 0' }}>
                 {t.items.map((item) => (
-                  <li key={item.product_id}>
+                  <li key={item.product_id} style={{ marginBottom: '0.25rem' }}>
                     {item.product_name} × {item.quantity} — $
                     {item.subtotal?.toFixed(2)}
                   </li>
                 ))}
               </ul>
+
+              <div
+                style={{
+                  textAlign: 'right',
+                  marginTop: '0.5rem',
+                  fontWeight: 'bold',
+                }}
+              >
+                Total: ${t.total_amount?.toFixed(2)}
+              </div>
             </div>
           ))}
         </>

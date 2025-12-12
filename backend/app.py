@@ -27,7 +27,8 @@ def get_db_connection():
 @cross_origin()
 def get_items():
     """
-    Return all products with id, name, price, and description.
+    Return all products with id, name, price, and description,
+    plus brand, type, and vendor names for richer UI.
     """
     conn = get_db_connection()
     if conn is None:
@@ -36,17 +37,31 @@ def get_items():
     try:
         with conn.cursor() as cursor:
             cursor.execute("""
-                SELECT product_id, product_name, price, description
-                FROM Product
+                SELECT
+                    p.product_id,
+                    p.product_name,
+                    p.price,
+                    p.description,
+                    b.name AS brand_name,
+                    pt.type_name AS type_name,
+                    v.name AS vendor_name
+                FROM Product p
+                JOIN Brand b ON p.brand_id = b.brand_id
+                JOIN Product_Type pt ON p.type_id = pt.type_id
+                JOIN Vendor v ON b.vendor_id = v.vendor_id
             """)
             items = [
                 {
                     "id": pid,
                     "name": name,
                     "price": float(price),
-                    "description": desc
+                    "description": desc,
+                    "brand": brand_name,
+                    "type": type_name,
+                    "vendor": vendor_name,
                 }
-                for pid, name, price, desc in cursor.fetchall()
+                for (pid, name, price, desc, brand_name, type_name, vendor_name)
+                in cursor.fetchall()
             ]
 
         conn.close()
@@ -55,7 +70,6 @@ def get_items():
     except Exception as e:
         print("Error in /items:", e)
         return jsonify([]), 500
-
 
 @app.route('/cart/<int:customer_id>', methods=['GET'])
 @cross_origin()
@@ -345,7 +359,7 @@ def checkout():
 def search_items():
     """
     Search products by substring match on product_name.
-    Returns a list of {id, name, price, description}.
+    Returns a list of {id, name, price, description, brand, type, vendor}.
     """
     q = request.args.get('q', '').strip()
     if not q:
@@ -359,14 +373,32 @@ def search_items():
         #implemented to avoid sql injection
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT product_id, product_name, price, description
-            FROM Product
-            WHERE product_name LIKE '%' || :q || '%'
+            SELECT
+                p.product_id,
+                p.product_name,
+                p.price,
+                p.description,
+                b.name AS brand_name,
+                pt.type_name AS type_name,
+                v.name AS vendor_name
+            FROM Product p
+            JOIN Brand b ON p.brand_id = b.brand_id
+            JOIN Product_Type pt ON p.type_id = pt.type_id
+            JOIN Vendor v ON b.vendor_id = v.vendor_id
+            WHERE p.product_name LIKE '%' || :q || '%'
         """, {"q": q})
         rows = cursor.fetchall()
 
         results = [
-            {"id": row[0], "name": row[1], "price": float(row[2]), "description": row[3]}
+            {
+                "id": row[0],
+                "name": row[1],
+                "price": float(row[2]),
+                "description": row[3],
+                "brand": row[4],
+                "type": row[5],
+                "vendor": row[6],
+            }
             for row in rows
         ]
 
@@ -440,6 +472,58 @@ def get_purchases(customer_id):
         return jsonify(purchases), 200
     except Exception as e:
         print("Error in /purchases:", e)
+        return jsonify({"error": "Database error"}), 500
+
+@app.route('/item/<int:product_id>', methods=['GET'])
+@cross_origin()
+def get_item(product_id):
+    """
+    Return detailed information for a single product, including
+    brand, type, and vendor.
+    """
+    conn = get_db_connection()
+    if conn is None:
+        return jsonify({"error": "Database unavailable"}), 500
+
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT
+                    p.product_id,
+                    p.product_name,
+                    p.price,
+                    p.description,
+                    b.name AS brand_name,
+                    pt.type_name AS type_name,
+                    v.name AS vendor_name
+                FROM Product p
+                JOIN Brand b ON p.brand_id = b.brand_id
+                JOIN Product_Type pt ON p.type_id = pt.type_id
+                JOIN Vendor v ON b.vendor_id = v.vendor_id
+                WHERE p.product_id = :product_id
+            """, {"product_id": product_id})
+
+            row = cursor.fetchone()
+
+        conn.close()
+
+        if not row:
+            return jsonify({"error": "Product not found"}), 404
+
+        (pid, name, price, desc, brand_name, type_name, vendor_name) = row
+
+        return jsonify({
+            "id": pid,
+            "name": name,
+            "price": float(price),
+            "description": desc,
+            "brand": brand_name,
+            "type": type_name,
+            "vendor": vendor_name,
+        }), 200
+
+    except Exception as e:
+        print("Error in /item:", e)
         return jsonify({"error": "Database error"}), 500
 
 @app.route('/health', methods=['GET'])
