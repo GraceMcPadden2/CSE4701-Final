@@ -10,3 +10,16 @@ Database was implemented using oracle
 ## Web Application
 ![Webapp Structure](Webapp.png)
 For the Web applicaiton, we used a react front end as well as a flask backend to connect to the database.
+
+
+## Instructions
+
+start oracle db using sql file
+run python app
+```python app.py```
+
+run react app
+```npm run dev```
+
+
+
