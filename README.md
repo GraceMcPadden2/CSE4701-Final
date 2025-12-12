@@ -2,3 +2,6 @@
 
 ![ER Diagram](ER.png)
 
+
+![Webapp Structure](Webapp.png)
+
