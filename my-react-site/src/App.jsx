@@ -8,6 +8,7 @@ import ItemDetailsPage from './pages/ItemDetailsPage';
 import Login from './pages/Login';
 import CreateAccount from './pages/CreateAccount';
 import SearchPage from './pages/SearchPage';
+import PastPurchasesPage from './pages/PastPurchasesPage'; // add
 
 function App() {
   const [page, setPage] = useState('home');
@@ -50,6 +51,9 @@ function App() {
     setSubmittedQuery(searchQuery);
     setPage('search');
   };
+
+  const handleSwitchToCreateAccount = () => setPage('create-account');
+  const handleSwitchToLogin = () => setPage('login');
 
   return (
     <div className="app-root">
@@ -105,7 +109,7 @@ function App() {
         <div className="sub-banner">
         </div>
         {page === 'home' && <HomePage onItemClick={handleItemClick} />} 
-        {page === 'cart' && <CartPage customerId={customerId} />}
+        {page === 'cart' && <CartPage customerId={customerId} setPage={setPage} />} {/* pass setPage */}
         {page === 'item-details' && <ItemDetailsPage item={selectedItem} customerId={customerId} />}
         {page === 'login' && <Login setCustomerId={(id) => {
           setCustomerId(id);
@@ -113,9 +117,10 @@ function App() {
         }} setCustomerInfo={(info) => {
           setCustomerInfo(info);
           localStorage.setItem('customerInfo', JSON.stringify(info));
-        }} setPage={setPage} onSwitchToCreateAccount={() => setPage('create-account')} />}
-        {page === 'create-account' && <CreateAccount onSwitchToLogin={() => setPage('login')} />}
+        }} setPage={setPage} onSwitchToCreateAccount={handleSwitchToCreateAccount} />}
+        {page === 'create-account' && <CreateAccount setCustomerId={setCustomerId} setCustomerInfo={setCustomerInfo} setPage={setPage} onSwitchToLogin={handleSwitchToLogin} />}
         {page === 'search' && <SearchPage query={submittedQuery} onItemClick={handleItemClick} />}
+        {page === 'purchases' && <PastPurchasesPage />} {/* new route-like branch */}
       </main>
       <footer className="site-footer">
         <div className="site-footer-inner">

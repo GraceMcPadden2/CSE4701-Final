@@ -1,141 +1,265 @@
 DROP TABLE Line_Item CASCADE CONSTRAINTS;
 DROP TABLE Transaction_Sale CASCADE CONSTRAINTS;
-DROP TABLE Cart_Item CASCADE CONSTRAINTS;
-DROP TABLE Cart CASCADE CONSTRAINTS;
 DROP TABLE Product CASCADE CONSTRAINTS;
 DROP TABLE Product_Type CASCADE CONSTRAINTS;
 DROP TABLE Brand CASCADE CONSTRAINTS;
 DROP TABLE Customer CASCADE CONSTRAINTS;
 DROP TABLE Vendor CASCADE CONSTRAINTS;
+DROP TABLE Cart_Item CASCADE CONSTRAINTS;
 
-CREATE TABLE Customer (
-    customer_id     NUMBER PRIMARY KEY,
-    name            VARCHAR2(100) NOT NULL,
-    email           VARCHAR2(255) NOT NULL UNIQUE,
-    username        VARCHAR2(50) NOT NULL UNIQUE,
-    password_hash   VARCHAR2(255) NOT NULL
-);
 
+DROP SEQUENCE customer_seq;
+DROP SEQUENCE transaction_seq;
+DROP SEQUENCE enterprise_seq;
+DROP SEQUENCE product_seq;
+DROP SEQUENCE product_type_seq;
+
+--Sequences
+CREATE SEQUENCE customer_seq
+START WITH 1
+INCREMENT BY 1;
+
+CREATE SEQUENCE transaction_seq
+START WITH 1
+INCREMENT BY 1;
+
+
+CREATE SEQUENCE enterprise_seq
+START WITH 1
+INCREMENT BY 1;
+
+CREATE SEQUENCE product_seq
+START WITH 1
+INCREMENT BY 1;
+
+
+CREATE SEQUENCE product_type_seq
+START WITH 1
+INCREMENT BY 1;
+
+
+--Vendor
 CREATE TABLE Vendor (
-    vendor_id   NUMBER PRIMARY KEY,
-    name        VARCHAR2(100) NOT NULL UNIQUE
+    vendor_id NUMBER(10) PRIMARY KEY,
+    name VARCHAR2(255) NOT NULL
 );
 
+--Customer
+CREATE TABLE Customer (
+    customer_id NUMBER(10) PRIMARY KEY,
+    name VARCHAR2(255) NOT NULL,
+    username VARCHAR2(255) NOT NULL UNIQUE,
+    password VARCHAR2(255) NOT NULL,
+    email VARCHAR2(20)
+);
+
+--Brand
 CREATE TABLE Brand (
-    brand_id    NUMBER PRIMARY KEY,
-    name        VARCHAR2(100) NOT NULL,
-    vendor_id   NUMBER NOT NULL,
-    CONSTRAINT fk_brand_vendor
-        FOREIGN KEY (vendor_id) REFERENCES Vendor(vendor_id)
+    brand_id NUMBER(10) PRIMARY KEY,
+    vendor_id NUMBER(10) NOT NULL,
+    name VARCHAR2(255) NOT NULL,
+    FOREIGN KEY (vendor_id) REFERENCES Vendor(vendor_id)
 );
 
+--Product Type
 CREATE TABLE Product_Type (
-    type_id     NUMBER PRIMARY KEY,
-    type_name   VARCHAR2(100) NOT NULL UNIQUE
+    type_id NUMBER(10) PRIMARY KEY,
+    type_name VARCHAR2(255) NOT NULL    
 );
 
+-- Product
 CREATE TABLE Product (
-    product_id   NUMBER PRIMARY KEY,
-    name         VARCHAR2(150) NOT NULL,
-    price        NUMBER(10,2) NOT NULL CHECK (price >= 0),
-    quantity     NUMBER NOT NULL CHECK (quantity >= 0),
-    description  VARCHAR2(500),
-    type_id      NUMBER NOT NULL,
-    brand_id     NUMBER NOT NULL,
-    CONSTRAINT fk_prod_type
-        FOREIGN KEY (type_id) REFERENCES Product_Type(type_id),
-    CONSTRAINT fk_prod_brand
-        FOREIGN KEY (brand_id) REFERENCES Brand(brand_id)
+    product_id NUMBER(10) PRIMARY KEY,
+    product_name VARCHAR2(255) NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    stock NUMBER(10) NOT NULL,
+    description VARCHAR2(255),
+    brand_id NUMBER(10) NOT NULL,
+    type_id NUMBER(10) NOT NULL,
+    FOREIGN KEY (brand_id) REFERENCES Brand(brand_id),
+    FOREIGN KEY (type_id) REFERENCES Product_Type(type_id)
 );
 
-CREATE TABLE Transaction_Sale (
-    transaction_id   NUMBER PRIMARY KEY,
-    customer_id      NUMBER NOT NULL,
-    amount           NUMBER(10,2) NOT NULL CHECK (amount >= 0),
-    created_at       DATE DEFAULT SYSDATE,
-    CONSTRAINT fk_trans_customer
-        FOREIGN KEY (customer_id) REFERENCES Customer(customer_id)
+-- Transaction_sale
+CREATE TABLE Transaction_sale (
+    transaction_id NUMBER(10) PRIMARY KEY,
+    customer_id NUMBER(10) NOT NULL,
+    transaction_date DATE NOT NULL,
+    total_amount DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id)
 );
 
-CREATE TABLE Line_Item (
-    transaction_id   NUMBER NOT NULL,
-    product_id       NUMBER NOT NULL,
-    quantity         NUMBER NOT NULL CHECK (quantity > 0),
-    CONSTRAINT pk_lineitem PRIMARY KEY (transaction_id, product_id),
-    CONSTRAINT fk_li_trans
-        FOREIGN KEY (transaction_id) REFERENCES Transaction_Sale(transaction_id),
-    CONSTRAINT fk_li_prod
-        FOREIGN KEY (product_id) REFERENCES Product(product_id)
+-- Line Item (weak entity)
+CREATE TABLE Line_item (
+    transaction_id NUMBER(10) NOT NULL,
+    product_id NUMBER(10) NOT NULL,
+    quantity NUMBER(10) NOT NULL,
+    subtotal DECIMAL(10, 2) NOT NULL,
+    PRIMARY KEY (transaction_id, product_id),
+    FOREIGN KEY (transaction_id) REFERENCES Transaction_Sale(transaction_id),
+    FOREIGN KEY (product_id) REFERENCES Product(product_id)
 );
 
-CREATE TABLE Cart (
-    cart_id      NUMBER PRIMARY KEY,
-    customer_id  NUMBER NOT NULL,
-    created_at   DATE DEFAULT SYSDATE,
-    updated_at   DATE DEFAULT SYSDATE,
-    CONSTRAINT fk_cart_customer
-        FOREIGN KEY (customer_id) REFERENCES Customer(customer_id)
-);
-
+-- Cart Item (weak entity)
 CREATE TABLE Cart_Item (
-    cart_id     NUMBER NOT NULL,
-    product_id  NUMBER NOT NULL,
-    quantity    NUMBER NOT NULL CHECK (quantity > 0),
-    CONSTRAINT pk_cartitem PRIMARY KEY (cart_id, product_id),
-    CONSTRAINT fk_ci_cart
-        FOREIGN KEY (cart_id) REFERENCES Cart(cart_id),
-    CONSTRAINT fk_ci_prod
-        FOREIGN KEY (product_id) REFERENCES Product(product_id)
+    customer_id NUMBER(10) NOT NULL,
+    product_id NUMBER(10) NOT NULL,
+    quantity NUMBER(10) NOT NULL,
+    PRIMARY KEY (customer_id, product_id),
+    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id),
+    FOREIGN KEY (product_id) REFERENCES Product(product_id)
 );
 
-CREATE INDEX idx_product_type ON Product(type_id);
-CREATE INDEX idx_product_brand ON Product(brand_id);
-CREATE INDEX idx_trans_customer ON Transaction_Sale(customer_id);
-CREATE INDEX idx_cart_customer ON Cart(customer_id);
 
--- Customers
-INSERT INTO Customer VALUES (1, 'Alice Johnson', 'alice@example.com', 'alicej', 'hash123');
-INSERT INTO Customer VALUES (2, 'Bob Smith', 'bob@example.com', 'bobsmith', 'hash456');
+--AI GENERATED DATA
+/* ===========================
+   VENDORS
+   =========================== */
+INSERT INTO Vendor (vendor_id, name) VALUES (1, 'Global Foods Inc');
+INSERT INTO Vendor (vendor_id, name) VALUES (2, 'TechGear Supply');
+INSERT INTO Vendor (vendor_id, name) VALUES (3, 'Home Essentials Co');
 
--- Vendors
-INSERT INTO Vendor VALUES (1, 'Acme Suppliers');
-INSERT INTO Vendor VALUES (2, 'Global Goods Inc.');
+/* ===========================
+   CUSTOMERS
+   =========================== */
+INSERT INTO Customer (customer_id, name, username, password, email)
+VALUES (customer_seq.NEXTVAL, 'Alice Johnson', 'alicej', 'pass123', 'alice@shop.com');
 
--- Brands
-INSERT INTO Brand VALUES (1, 'FreshFarm', 1);
-INSERT INTO Brand VALUES (2, 'TechNova', 2);
+INSERT INTO Customer (customer_id, name, username, password, email)
+VALUES (customer_seq.NEXTVAL, 'Bob Smith', 'bobsmith', 'secure456', 'bob@shop.com');
 
--- Product Types
-INSERT INTO Product_Type VALUES (1, 'Food');
-INSERT INTO Product_Type VALUES (2, 'Electronics');
+INSERT INTO Customer (customer_id, name, username, password, email)
+VALUES (customer_seq.NEXTVAL, 'Carol White', 'carolw', 'mypassword', 'carol@shop.com');
 
--- Products
-INSERT INTO Product 
-VALUES (1, 'Organic Apples', 3.99, 120, 'Fresh red apples from local farms', 1, 1);
+/* ===========================
+   BRANDS
+   =========================== */
+INSERT INTO Brand (brand_id, vendor_id, name)
+VALUES (1, 1, 'FreshFarm');
 
-INSERT INTO Product 
-VALUES (2, 'LED Monitor 24-inch', 149.99, 45, '1080p HD LED monitor', 2, 2);
+INSERT INTO Brand (brand_id, vendor_id, name)
+VALUES (2, 2, 'UltraTech');
 
-INSERT INTO Product 
-VALUES (3, 'Granola Bars (Pack of 12)', 7.49, 60, 'Assorted flavors', 1, 1);
+INSERT INTO Brand (brand_id, vendor_id, name)
+VALUES (3, 3, 'CozyHome');
 
--- Transactions
-INSERT INTO Transaction_Sale (transaction_id, customer_id, amount)
-VALUES (1, 1, 11.48);
+/* ===========================
+   PRODUCT TYPES
+   =========================== */
+INSERT INTO Product_Type (type_id, type_name)
+VALUES (product_type_seq.NEXTVAL, 'Food');
 
-INSERT INTO Transaction_Sale (transaction_id, customer_id, amount)
-VALUES (2, 2, 149.99);
+INSERT INTO Product_Type (type_id, type_name)
+VALUES (product_type_seq.NEXTVAL, 'Electronics');
 
--- Line Items
-INSERT INTO Line_Item VALUES (1, 1, 2);
-INSERT INTO Line_Item VALUES (1, 3, 1);
-INSERT INTO Line_Item VALUES (2, 2, 1);
+INSERT INTO Product_Type (type_id, type_name)
+VALUES (product_type_seq.NEXTVAL, 'Home Goods');
 
--- Carts
-INSERT INTO Cart (cart_id, customer_id) VALUES (1, 1);
-INSERT INTO Cart (cart_id, customer_id) VALUES (2, 2);
+/* ===========================
+   PRODUCTS
+   =========================== */
+INSERT INTO Product
+SELECT product_seq.NEXTVAL,
+       'Organic Apples',
+       3.99,
+       100,
+       'Fresh organic apples',
+       1,
+       pt.type_id
+FROM Product_Type pt
+WHERE pt.type_name = 'Food';
 
--- Cart Items
-INSERT INTO Cart_Item VALUES (1, 1, 3);
-INSERT INTO Cart_Item VALUES (1, 3, 2);
-INSERT INTO Cart_Item VALUES (2, 2, 1);
+INSERT INTO Product
+SELECT product_seq.NEXTVAL,
+       'Wireless Headphones',
+       89.99,
+       50,
+       'Noise cancelling headphones',
+       2,
+       pt.type_id
+FROM Product_Type pt
+WHERE pt.type_name = 'Electronics';
+
+INSERT INTO Product
+SELECT product_seq.NEXTVAL,
+       'Throw Blanket',
+       24.99,
+       75,
+       'Soft fleece blanket',
+       3,
+       pt.type_id
+FROM Product_Type pt
+WHERE pt.type_name = 'Home Goods';
+
+/* ===========================
+   TRANSACTIONS
+   =========================== */
+INSERT INTO Transaction_Sale
+SELECT transaction_seq.NEXTVAL,
+       c.customer_id,
+       SYSDATE,
+       97.97
+FROM Customer c
+WHERE c.username = 'alicej';
+
+INSERT INTO Transaction_Sale
+SELECT transaction_seq.NEXTVAL,
+       c.customer_id,
+       SYSDATE - 1,
+       24.99
+FROM Customer c
+WHERE c.username = 'bobsmith';
+
+/* ===========================
+   LINE ITEMS
+   =========================== */
+INSERT INTO Line_Item
+SELECT t.transaction_id,
+       p.product_id,
+       5,
+       19.95
+FROM Transaction_Sale t
+JOIN Customer c ON t.customer_id = c.customer_id
+JOIN Product p ON p.product_name = 'Organic Apples'
+WHERE c.username = 'alicej';
+
+INSERT INTO Line_Item
+SELECT t.transaction_id,
+       p.product_id,
+       1,
+       89.99
+FROM Transaction_Sale t
+JOIN Customer c ON t.customer_id = c.customer_id
+JOIN Product p ON p.product_name = 'Wireless Headphones'
+WHERE c.username = 'alicej';
+
+INSERT INTO Line_Item
+SELECT t.transaction_id,
+       p.product_id,
+       1,
+       24.99
+FROM Transaction_Sale t
+JOIN Customer c ON t.customer_id = c.customer_id
+JOIN Product p ON p.product_name = 'Throw Blanket'
+WHERE c.username = 'bobsmith';
+
+/* ===========================
+   CART ITEMS
+   =========================== */
+INSERT INTO Cart_Item
+SELECT c.customer_id,
+       p.product_id,
+       1
+FROM Customer c
+JOIN Product p ON p.product_name = 'Wireless Headphones'
+WHERE c.username = 'carolw';
+
+INSERT INTO Cart_Item
+SELECT c.customer_id,
+       p.product_id,
+       3
+FROM Customer c
+JOIN Product p ON p.product_name = 'Organic Apples'
+WHERE c.username = 'bobsmith';
+
+COMMIT;

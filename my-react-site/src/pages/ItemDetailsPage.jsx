@@ -36,16 +36,30 @@ const ItemDetailsPage = ({ item, customerId }) => {
   return (
     <div className="item-details-container">
       <div className="item-details-content">
-        <div className="item-image-section">
-          {/* Placeholder for product image */}
-          <div className="item-image-placeholder">
-            <span>Product Image</span>
-          </div>
-        </div>
         <div className="item-info-section">
           <h1 className="item-title">{item.name}</h1>
           <p className="item-price">${item.price}</p>
-          <p className="item-description">{item.description || 'No description available'}</p>
+          <div className="description-section">
+            <label htmlFor="description" className="description-label">Description:</label>
+            <textarea
+              id="description"
+              value={item.description || 'No description available'}
+              readOnly
+              rows="4"
+              cols="50"
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #ccc',
+                borderRadius: '4px',
+                backgroundColor: '#f9f9f9',
+                fontFamily: 'Arial, sans-serif',
+                fontSize: '14px',
+                resize: 'none'
+              }}
+              className="description-textarea"
+            />
+          </div>
           <div className="quantity-section">
             <label htmlFor="quantity" className="quantity-label">Quantity:</label>
             <input
