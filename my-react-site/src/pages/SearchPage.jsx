@@ -40,7 +40,7 @@ const SearchPage = ({ query, onItemClick }) => {
         {results.map((item) => (
           <li
             key={item.id}
-            onClick={() => onItemClick(item)} // this now routes to ItemDetailsPage via App
+            onClick={() => onItemClick(item)}
             style={{
               width: 'calc(100% - 40px)',
               padding: '20px',
