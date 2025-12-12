@@ -14,11 +14,11 @@ For the Web applicaiton, we used a react front end as well as a flask backend to
 
 ## Instructions
 
-start oracle db using sql file
-run python app
+* start oracle db using sql file
+* run python app
 ```python app.py```
 
-run react app
+* run react app
 ```npm run dev```
 
 
