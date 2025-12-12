@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from 'react';
-// import cartData from '../data/cartData'; // Removed: no longer needed
-import backgroundImage from '../assets/background.jpg'; // Import the background image
+// import cartData from '../data/cartData'; 
+import backgroundImage from '../assets/background.jpg'; 
 
-const HomePage = ({ onItemClick }) => { // <-- added prop for click handler
+const HomePage = ({ onItemClick }) => { 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    console.log('HomePage mounted, fetching items from Flask...');  // Updated: debug log
+    console.log('HomePage mounted, fetching items from Flask...'); 
     fetch('http://127.0.0.1:5000/items')
       .then(response => {
-        console.log('Items response received:', response);  // Updated: debug log
+        console.log('Items response received:', response); 
         return response.json();
       })
       .then(data => {
-        console.log('Items data fetched:', data);  // Updated: debug log
+        console.log('Items data fetched:', data);  
         setItems(data);
         setLoading(false);
       })
       .catch(err => {
-        console.error('Items fetch error:', err);  // Updated: debug log
+        console.error('Items fetch error:', err);  
         setError(err.message);
         setLoading(false);
       });
